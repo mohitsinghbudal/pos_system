@@ -1,0 +1,74 @@
+# =========================
+# Visual Studio
+# =========================
+.vs/
+.vscode/
+
+# User-specific Visual Studio files
+*.user
+*.userosscache
+*.suo
+
+# =========================
+# .NET Build Output
+# =========================
+bin/
+obj/
+
+# =========================
+# Visual Studio / .NET Cache
+# =========================
+*.cache
+*.log
+
+# =========================
+# NuGet
+# =========================
+packages/
+*.nupkg
+*.snupkg
+
+# =========================
+# Test Results
+# =========================
+TestResults/
+*.trx
+
+# =========================
+# Rider / JetBrains
+# =========================
+.idea/
+
+# =========================
+# Application Configuration
+# =========================
+appsettings.json
+appsettings.*.json
+
+# Keep example configuration
+!appsettings.Example.json
+
+# =========================
+# Environment Variables
+# =========================
+.env
+.env.*
+!.env.example
+
+# =========================
+# Publish Output
+# =========================
+publish/
+PublishOutput/
+
+# =========================
+# OS Files
+# =========================
+.DS_Store
+Thumbs.db
+
+# =========================
+# Temporary Files
+# =========================
+*.tmp
+*.temp

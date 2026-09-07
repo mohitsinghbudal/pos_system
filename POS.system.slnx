@@ -1,0 +1,12 @@
+<Solution>
+  <Folder Name="/DataLayer/">
+    <Project Path="POS.DataLayer/POS.DataLayer.csproj" />
+  </Folder>
+  <Folder Name="/Interfaces/">
+    <Project Path="POS.Interface/POS.Interface.csproj" />
+  </Folder>
+  <Folder Name="/ServiceLayer/">
+    <Project Path="POS.Service/POS.Service.csproj" />
+  </Folder>
+  <Project Path="POS.system/POS.system.csproj" />
+</Solution>
