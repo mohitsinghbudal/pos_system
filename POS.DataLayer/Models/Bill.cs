@@ -1,9 +1,7 @@
-﻿
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
-using POS.DataLayer.Models;
 
 namespace POS.DataLayer.Models
 {
@@ -12,6 +10,8 @@ namespace POS.DataLayer.Models
         [Key]
         public int Id { get; set; }
 
+
+        // Bill Information
         [Required]
         [MaxLength(50)]
         public string BillNumber { get; set; } = string.Empty;
@@ -19,20 +19,25 @@ namespace POS.DataLayer.Models
         [Required]
         public DateTime BillDate { get; set; } = DateTime.UtcNow;
 
-        // User whose bill this is
+
+        // User
         public int? UserId { get; set; }
 
         [ForeignKey(nameof(UserId))]
         public User? User { get; set; }
 
+
         // Customer
         public int? CustomerId { get; set; }
 
+        [ForeignKey(nameof(CustomerId))]
         public User? Customer { get; set; }
+
 
         // Inventory Items
         public ICollection<InventoryItem> InventoryItems { get; set; }
             = new List<InventoryItem>();
+
 
         // Amount
         [Required]
@@ -45,7 +50,8 @@ namespace POS.DataLayer.Models
         [Required]
         public decimal TotalAmount { get; set; }
 
-        // Audit - who created the bill
+
+        // Audit - Created
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 
         public int CreatedBy { get; set; }
@@ -53,7 +59,8 @@ namespace POS.DataLayer.Models
         [ForeignKey(nameof(CreatedBy))]
         public User CreatedByUser { get; set; } = null!;
 
-        // Audit - who last updated the bill
+
+        // Audit - Updated
         public DateTime? UpdatedAt { get; set; }
 
         public int? UpdatedBy { get; set; }
@@ -61,7 +68,17 @@ namespace POS.DataLayer.Models
         [ForeignKey(nameof(UpdatedBy))]
         public User? UpdatedByUser { get; set; }
 
+
+        // Soft Delete
         public bool IsActive { get; set; } = true;
+
+        public int? DeletedBy { get; set; }
+
+        [ForeignKey(nameof(DeletedBy))]
+        public User? DeletedByUser { get; set; }
+
+        public DateTime? DeletedAt { get; set; }
+
 
         // Payments
         public ICollection<Payment> Payments { get; set; }

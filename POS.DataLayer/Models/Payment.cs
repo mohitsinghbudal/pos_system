@@ -1,5 +1,4 @@
-﻿
-using System;
+﻿using System;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
@@ -10,6 +9,7 @@ namespace POS.DataLayer.Models
         [Key]
         public int Id { get; set; }
 
+
         // Bill
         [Required]
         public int BillId { get; set; }
@@ -17,10 +17,14 @@ namespace POS.DataLayer.Models
         [ForeignKey(nameof(BillId))]
         public Bill Bill { get; set; } = null!;
 
+
         // Payment Type
         [Required]
-        [MaxLength(30)]
-        public string PaymentType { get; set; } = string.Empty;
+        public int PaymentTypeId { get; set; }
+
+        [ForeignKey(nameof(PaymentTypeId))]
+        public PaymentType PaymentType { get; set; } = null!;
+
 
         // Payment Information
         [Required]
@@ -32,6 +36,7 @@ namespace POS.DataLayer.Models
         [MaxLength(100)]
         public string? ReferenceNumber { get; set; }
 
+
         // Online Payment Tracking
         public string? Req { get; set; }
 
@@ -39,7 +44,8 @@ namespace POS.DataLayer.Models
 
         public string? Callback { get; set; }
 
-        // Audit - who created the payment
+
+        // Audit - Created
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 
         public int CreatedBy { get; set; }
@@ -47,7 +53,8 @@ namespace POS.DataLayer.Models
         [ForeignKey(nameof(CreatedBy))]
         public User CreatedByUser { get; set; } = null!;
 
-        // Audit - who last updated the payment
+
+        // Audit - Updated
         public DateTime? UpdatedAt { get; set; }
 
         public int? UpdatedBy { get; set; }
@@ -55,6 +62,15 @@ namespace POS.DataLayer.Models
         [ForeignKey(nameof(UpdatedBy))]
         public User? UpdatedByUser { get; set; }
 
+
+        // Soft Delete
         public bool IsActive { get; set; } = true;
+
+        public int? DeletedBy { get; set; }
+
+        [ForeignKey(nameof(DeletedBy))]
+        public User? DeletedByUser { get; set; }
+
+        public DateTime? DeletedOn { get; set; }
     }
 }

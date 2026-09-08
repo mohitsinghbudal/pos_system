@@ -31,9 +31,9 @@ namespace POS.DataLayer.Models
         public bool IsActive { get; set; } = true;
 
 
-        [ForeignKey(nameof(Role))]
-        public int RoleId { get; set; }
 
+        public int RoleId { get; set; } = 3;
+        [ForeignKey(nameof(Role))]
         public Role Role { get; set; } = null!;
 
    
@@ -43,5 +43,10 @@ namespace POS.DataLayer.Models
 
         [ForeignKey(nameof(RoleUpdatedBy))]
         public User? RoleUpdatedByUser { get; set; }
+
+        public int DeletedBy { get; set; }
+        [ForeignKey(nameof(DeletedBy))]
+        public User? DeletedByUser { get; set; }
+        public DateTime DeletedAt { get; set; } = DateTime.UtcNow;
     }
 }

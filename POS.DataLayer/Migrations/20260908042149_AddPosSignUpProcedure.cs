@@ -10,8 +10,9 @@ namespace POS.DataLayer.Migrations
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
-            var sqlScript = File.ReadAllText(@"..\POS.DataLayer\StoreProcedures\pos_signup.sql");
+              var sqlScript = File.ReadAllText(@"..\POS.DataLayer\StoreProcedures\pos_signup.sql");
             migrationBuilder.Sql(sqlScript);
+
         }
 
         /// <inheritdoc />

@@ -53,6 +53,6 @@ namespace POS.system.Controllers
                 return BadRequest("error occured");
             }
             return Ok(res);
-        }>
+        }
     }
 }

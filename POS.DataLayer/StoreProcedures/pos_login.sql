@@ -1,4 +1,4 @@
-create procedure dbo.pos_login 
+create or alter procedure dbo.pos_login 
 @email varchar(150)
 as
 begin 

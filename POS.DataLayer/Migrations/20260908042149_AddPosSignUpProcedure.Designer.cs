@@ -12,7 +12,7 @@ using POS.DataLayer.Data;
 namespace POS.DataLayer.Migrations
 {
     [DbContext(typeof(POSDbContext))]
-    [Migration("20260907083231_AddPosSignUpProcedure")]
+    [Migration("20260908042149_AddPosSignUpProcedure")]
     partial class AddPosSignUpProcedure
     {
         /// <inheritdoc />

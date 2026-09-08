@@ -1,16 +1,32 @@
-create procedure dbo.pos_signup
-@email varchar(150),
-@passwordHash varchar(150),
-@phoneNo varchar(20),
-@roleId int,
-@isActive bit,
-@createdat datetime
+CREATE OR ALTER PROCEDURE dbo.pos_signup
+    @Email VARCHAR(150),
+    @PasswordHash VARCHAR(255),
+    @Name varchar(100),
+    @PhoneNo VARCHAR(20)
+AS
+BEGIN
+    SET NOCOUNT ON;
 
-as
-begin 
- SET NOCOUNT ON;
+    INSERT INTO dbo.Users
+    (
+        Email,
+        PasswordHash,
+        Name,
+        PhoneNo,
+        RoleId,
+        IsActive,
+        CreatedAt
+    )
+    VALUES
+    (
+        LTRIM(RTRIM(@Email)),
+        @PasswordHash,
+        @Name,
+        LTRIM(RTRIM(@PhoneNo)),
+        3,
+        1,
+        GETUTCDATE()
+    );
 
- insert into Users (Email, PasswordHash, PhoneNo, RoleId, IsActive, CreatedAt) 
- values (@email, @passwordHash, @phoneNo, @roleId, @isActive, @createdat);
-end
-
+    SELECT CAST(SCOPE_IDENTITY() AS INT) AS UserId;
+END;

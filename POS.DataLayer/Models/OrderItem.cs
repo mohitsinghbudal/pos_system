@@ -1,23 +1,35 @@
-﻿using System;
-using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
 namespace POS.DataLayer.Models
 {
-    public class Unit
+    public class OrderItem
     {
         [Key]
         public int Id { get; set; }
 
 
-        // Unit Information
+        // Inventory Item / Product
         [Required]
-        [MaxLength(50)]
-        public string Name { get; set; } = string.Empty;
+        public int InventoryItemId { get; set; }
 
+        [ForeignKey(nameof(InventoryItemId))]
+        public InventoryItem InventoryItem { get; set; } = null!;
+
+
+        // Quantity
         [Required]
-        [MaxLength(20)]
-        public string Abbreviation { get; set; } = string.Empty;
+        public decimal Quantity { get; set; }
+
+
+        // Price at the time of ordering
+        [Required]
+        public decimal UnitPrice { get; set; }
+
+
+        // Quantity × UnitPrice
+        [Required]
+        public decimal TotalPrice { get; set; }
 
 
         // Audit - Created

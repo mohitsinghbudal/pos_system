@@ -8,17 +8,20 @@ namespace POS.Service.userServices
 
         public UserServices(IUserDll userDll)
         {
-            _userDll = userDll ?? throw new System.ArgumentNullException(nameof(userDll));
+            _userDll = userDll ;
         }
 
         public async Task<string?> test()
         {
             return await _userDll.test();
         }
-        public async Task<bool> signUp(userSignupDTO dto)
+        public async Task<bool> signUp(SignupDTO dto)
         {
             return await _userDll.signUp(dto);
         }
-
+        public async Task<bool> Login(LoginDTO dto)
+        {
+            return await _userDll.Login(dto);
+        }
     }
 }

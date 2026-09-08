@@ -8,5 +8,10 @@
   <Folder Name="/ServiceLayer/">
     <Project Path="POS.Service/POS.Service.csproj" />
   </Folder>
+  <Folder Name="/Solution Items/">
+    <File Path=".gitignore" />
+    <File Path="LICENSE.txt" />
+    <File Path="readme.md" />
+  </Folder>
   <Project Path="POS.system/POS.system.csproj" />
 </Solution>
