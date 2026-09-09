@@ -1,5 +1,4 @@
-﻿
-create or alter procedure dbo.pos_addRoles
+﻿create or alter procedure dbo.pos_addRoles
 @RoleName varchar(100),
 @Description varchar(255),
 @CreatedBy int

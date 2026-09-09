@@ -34,7 +34,7 @@ namespace POS.system.Controllers
         {
             if (dto == null) return BadRequest("Invalid data");
 
-            var res = await _user.signUp(dto);
+            var res = await _user.SignUp(dto);
 
             if(!res)
             {

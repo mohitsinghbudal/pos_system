@@ -19,11 +19,8 @@ namespace POS.DataLayer.Models
 
 
         // Payment Type
-        [Required]
-        public int PaymentTypeId { get; set; }
-
-        [ForeignKey(nameof(PaymentTypeId))]
-        public PaymentType PaymentType { get; set; } = null!;
+      
+        public string PaymentType { get; set; } = string.Empty;
 
 
         // Payment Information

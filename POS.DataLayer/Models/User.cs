@@ -1,7 +1,5 @@
-﻿
-using System;
+﻿using System;
 using System.ComponentModel.DataAnnotations;
-using System.ComponentModel.DataAnnotations.Schema;
 
 namespace POS.DataLayer.Models
 {
@@ -25,28 +23,27 @@ namespace POS.DataLayer.Models
         [MaxLength(20)]
         public string PhoneNo { get; set; } = string.Empty;
 
-       
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 
         public bool IsActive { get; set; } = true;
 
-
-
+        // Role
         public int RoleId { get; set; } = 3;
-        [ForeignKey(nameof(Role))]
+
         public Role Role { get; set; } = null!;
 
-   
+        // Role updated by
         public DateTime? RoleUpdatedAt { get; set; }
 
         public int? RoleUpdatedBy { get; set; }
 
-        [ForeignKey(nameof(RoleUpdatedBy))]
         public User? RoleUpdatedByUser { get; set; }
 
-        public int DeletedBy { get; set; }
-        [ForeignKey(nameof(DeletedBy))]
+        // Soft Delete
+        public int? DeletedBy { get; set; }
+
         public User? DeletedByUser { get; set; }
-        public DateTime DeletedAt { get; set; } = DateTime.UtcNow;
+
+        public DateTime? DeletedAt { get; set; }
     }
 }
