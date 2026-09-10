@@ -1,6 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using POS.DataLayer.Data;
 using POS.DataLayer.Models;
+using POS.Interface.DTO;
 using POS.Interface.interfaces;
 using System;
 using System.Collections.Generic;
@@ -8,7 +9,7 @@ using System.Text;
 
 namespace POS.DataLayer.DataAccess.JwtDAL
 {
-    internal class JwtDll : IJwtDll
+    public class JwtDll : IJwtDll
     {
         private readonly POSDbContext _context;
         public JwtDll(POSDbContext context)
@@ -17,34 +18,59 @@ namespace POS.DataLayer.DataAccess.JwtDAL
 
         }
 
-        public async Task<User?> GetUserByEmailAsync(string email)
-        {
-            return await _context.Users
-                .Include(u => u.Role)
-                .FirstOrDefaultAsync(u => u.Email == email);
-        }
-
-        public async Task<RefreshToken?> GetRefreshTokenAsync(
+        public async Task<RefreshTokenDto?> GetRefreshTokenAsync(
             string token)
         {
-            return await _context.RefreshTokens
-                .Include(rt => rt.User)
-                .ThenInclude(u => u.Role)
-                .FirstOrDefaultAsync(rt => rt.Token == token);
+            var refreshToken =  await _context.RefreshTokens
+                .Include(x=>x.ExpiresAt)
+                .FirstOrDefaultAsync(x => x.Token == token);
+
+            if (refreshToken == null) return null;
+
+            return new RefreshTokenDto
+            {
+                Token = refreshToken.Token,
+                UserId = refreshToken.UserId,
+                CreatedAt = refreshToken.CreatedAt,
+                ExpiresAt = refreshToken.ExpiresAt,
+                IsRevoked = refreshToken.IsRevoked,
+                RevokedAt = refreshToken.RevokedAt,
+                ReplacedByToken = refreshToken.ReplacedByToken
+            };
         }
 
-        public async Task AddRefreshTokenAsync(
-            RefreshToken refreshToken)
+        public async Task<bool> AddRefreshTokenAsync(
+            string refreshToken, int userId)
         {
-            await _context.RefreshTokens.AddAsync(refreshToken);
+            var newRefreshToken = new RefreshToken
+            {
+                Token = refreshToken,
+                UserId = userId
+            };
+
+            await _context.RefreshTokens.AddAsync(newRefreshToken);
+            return true;
         }
 
-        public Task UpdateRefreshTokenAsync(
-            RefreshToken refreshToken)
+        public async Task<bool> UpdateRefreshToken(RefreshTokenDto dto)
         {
-            _context.RefreshTokens.Update(refreshToken);
+            var newitem = new RefreshToken
+            {
+                Id = dto.Id,
+                Token = dto.Token,
+                UserId = dto.UserId,
+                CreatedAt = dto.CreatedAt,
+                ExpiresAt = dto.ExpiresAt,
+                IsRevoked = dto.IsRevoked,
+                RevokedAt = dto.RevokedAt,
+                ReplacedByToken = dto.ReplacedByToken
+            };
 
-            return Task.CompletedTask;
+            _context.RefreshTokens.Update(newitem);
+
+            await _context.SaveChangesAsync();
+
+            return true;
         }
 
         public async Task SaveChangesAsync()

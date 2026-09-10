@@ -1,17 +1,19 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
+﻿using POS.Interface.DTO;
 
 namespace POS.Interface.interfaces
 {
-    public interface IJwt
+    public interface IJwtService
     {
-        string GenerateAccessToken(User user);
+        string GenerateAccessToken(UserDTO dto);
+    }
+    public interface IJwtDll
+    {
+        Task<RefreshTokenDto?> GetRefreshTokenAsync(string token);
 
-        string GenerateRefreshToken();
+        Task<bool> AddRefreshTokenAsync(string refreshToken, int userId);
 
-        DateTime GetAccessTokenExpiration();
+        Task<bool> UpdateRefreshToken(RefreshTokenDto refreshToken);
 
-        DateTime GetRefreshTokenExpiration();
+        Task SaveChangesAsync();
     }
 }

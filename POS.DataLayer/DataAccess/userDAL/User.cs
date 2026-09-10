@@ -16,7 +16,7 @@ namespace POS.DataLayer.DataAccess.userDAL
         }
         public async Task<string?> test()
         {
-            await Task.Delay(1000);
+            await Task.Delay(1);
             return "test successful";
         }
         public async Task<bool> UserExists(string email)
@@ -24,16 +24,44 @@ namespace POS.DataLayer.DataAccess.userDAL
             return await _context.Users
                 .AnyAsync(u => u.Email == email);
         }
-        public async Task<string> GetPassword(string email)
+        public async Task<UserDTO> GetUserAsync(string email)
         {
-            var password = await _context.Users
+            var user = await _context.Users
                 .Where(u => u.Email == email)
-                .Select(u => u.PasswordHash)
+                .Select(u => new UserDTO
+                {
+                    Id = u.Id,
+                    Name = u.Name,
+                    Email = u.Email,
+                    PasswordHash = u.PasswordHash,
+                    PhoneNo = u.PhoneNo,
+                    CreatedAt = u.CreatedAt,
+                    IsActive = u.IsActive,
+                    RoleId = u.RoleId
+                })
                 .FirstOrDefaultAsync();
-            return password;
+            return user;
+        }
+        public async Task<UserDTO?> GetUserByIdAsync(int id)
+        {
+            var user = await _context.Users
+                .Where(u => u.Id == id)
+                .Select(u => new UserDTO
+                {
+                    Id = u.Id,
+                    Name = u.Name,
+                    Email = u.Email,
+                    PhoneNo = u.PhoneNo,
+                    CreatedAt = u.CreatedAt,
+                    IsActive = u.IsActive,
+                    RoleId = u.RoleId
+                })
+                .FirstOrDefaultAsync();
+            return user;
+
         }
 
-        
+
         public async Task<bool> SignUp( SignupDTO dto)
         {
             var Params = new[]{
@@ -51,43 +79,13 @@ namespace POS.DataLayer.DataAccess.userDAL
 
         int newUserId = ResultList.FirstOrDefault();
 
-        return newUserId > 0;
+            if (newUserId == -1)
+            {
+                throw new InvalidOperationException("Email already registered");
+            }
 
-        }
+            return newUserId > 0;
 
-        public async Task<User?> GetUserByEmailAsync(string email)
-        {
-            return await _context.Users
-                .Include(u => u.Role)
-                .FirstOrDefaultAsync(u => u.Email == email);
-        }
-
-        public async Task<RefreshToken?> GetRefreshTokenAsync(
-            string token)
-        {
-            return await _context.RefreshTokens
-                .Include(rt => rt.User)
-                .ThenInclude(u => u.Role)
-                .FirstOrDefaultAsync(rt => rt.Token == token);
-        }
-
-        public async Task AddRefreshTokenAsync(
-            RefreshToken refreshToken)
-        {
-            await _context.RefreshTokens.AddAsync(refreshToken);
-        }
-
-        public Task UpdateRefreshTokenAsync(
-            RefreshToken refreshToken)
-        {
-            _context.RefreshTokens.Update(refreshToken);
-
-            return Task.CompletedTask;
-        }
-
-        public async Task SaveChangesAsync()
-        {
-            await _context.SaveChangesAsync();
         }
 
 

@@ -7,6 +7,12 @@ AS
 BEGIN
     SET NOCOUNT ON;
 
+    IF EXISTS (SELECT 1 FROM dbo.Users WITH (NOLOCK) WHERE Email = @Email)
+    BEGIN
+        SELECT -1 AS UserId; 
+        RETURN;
+    END
+
     INSERT INTO dbo.Users
     (
         Email,
@@ -19,10 +25,10 @@ BEGIN
     )
     VALUES
     (
-        LTRIM(RTRIM(@Email)),
+        @Email,
         @PasswordHash,
         @Name,
-        LTRIM(RTRIM(@PhoneNo)),
+        @PhoneNo,
         3,
         1,
         GETUTCDATE()

@@ -1,7 +1,8 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using POS.DataLayer.Models;
-using POS.Interface.interfaces;
 using POS.Interface.DTO;
+using POS.Interface.interfaces;
+using System.Security.Claims;
 
 namespace POS.system.Controllers
 {
@@ -30,7 +31,7 @@ namespace POS.system.Controllers
         }
 
         [HttpPost("signup")]
-        public async Task<IActionResult> signUp(SignupDTO dto)
+        public async Task<IActionResult> SignUp(SignupDTO dto)
         {
             if (dto == null) return BadRequest("Invalid data");
 
@@ -40,19 +41,48 @@ namespace POS.system.Controllers
             {
                 return BadRequest("error occured");
             }
-            return Ok(res);
+            return Ok(new { Message = "User created successfully" });
         }
 
         [HttpPost("login")]
-        public async Task<IActionResult> Login(LoginDTO dto)
+        public async Task<IActionResult> Login(LoginReqDTO dto)
         {
-            if (dto == null) return BadRequest("Invalid data");
+            if (dto == null) return Unauthorized("Invalid data");
             var res = await _user.Login(dto);
-            if (!res)
+            if (res==null)
             {
                 return BadRequest("error occured");
             }
             return Ok(res);
+        }
+
+        [HttpPost("refresh")]
+        public async Task<IActionResult> Refresh(RefreshTokenRequestDto dto)
+        {
+            if (dto == null)
+                return BadRequest("Invalid data");
+
+            var res = await _user.Refresh(dto);
+
+            if (res == null)
+                return Unauthorized("Invalid refresh token");
+
+            return Ok(res);
+        }
+
+        [HttpPost("logout")]
+        public async Task<IActionResult> Logout(RefreshTokenRequestDto dto)
+        {
+
+            if (dto == null)
+                return BadRequest("Invalid data");
+
+            var res = await _user.Logout(dto);
+
+            if (!res)
+                return Unauthorized("Invalid refresh token");
+
+            return Ok(new { message = "Logout successful" });
         }
     }
 }

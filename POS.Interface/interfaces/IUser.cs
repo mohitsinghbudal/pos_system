@@ -5,7 +5,9 @@ namespace POS.Interface.interfaces
     {
         Task<string?> test();
         Task<bool> SignUp(SignupDTO dto);
-        Task<bool> Login(LoginDTO dto);
+        Task<LoginResDTO?> Login(LoginReqDTO dto);
+        Task<RefreshTokenResponseDto?> Refresh(RefreshTokenRequestDto dto);
+        Task<bool> Logout(RefreshTokenRequestDto dto);
 
     }
     public interface IUserDll
@@ -13,7 +15,13 @@ namespace POS.Interface.interfaces
         Task<string?> test();
         Task<bool> SignUp(SignupDTO dto);
         Task<bool> UserExists(string email);
-        Task<string> GetPassword(string email);
+        Task<UserDTO?> GetUserAsync(string email);
+        Task<UserDTO?> GetUserByIdAsync(int id);
+       
+
+   
+
+        
     }
 
 
