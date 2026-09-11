@@ -20,22 +20,24 @@ namespace POS.DataLayer.DataAccess.JwtDAL
 
         public async Task<RefreshTokenDto?> GetRefreshTokenAsync(string token)
         {
-            var refreshToken = await _context.RefreshTokens
-                .FirstOrDefaultAsync(x => x.Token == token);
-
-            if (refreshToken == null)
-                return null;
-
-            return new RefreshTokenDto
-            {
-                Token = refreshToken.Token,
-                UserId = refreshToken.UserId,
-                CreatedAt = refreshToken.CreatedAt,
-                ExpiresAt = refreshToken.ExpiresAt,
-                IsRevoked = refreshToken.IsRevoked,
-                RevokedAt = refreshToken.RevokedAt,
-                ReplacedByToken = refreshToken.ReplacedByToken
-            };
+            return await _context.RefreshTokens
+                .AsNoTracking()
+                .Where(x =>
+                    x.Token == token &&
+                    !x.IsRevoked &&
+                    x.ExpiresAt > DateTime.UtcNow)
+                .Select(x => new RefreshTokenDto
+                {
+                    Id=x.Id,
+                    Token = x.Token,
+                    UserId = x.UserId,
+                    CreatedAt = x.CreatedAt,
+                    ExpiresAt = x.ExpiresAt,
+                    IsRevoked = x.IsRevoked,
+                    RevokedAt = x.RevokedAt,
+                    ReplacedByToken = x.ReplacedByToken
+                })
+                .FirstOrDefaultAsync();
         }
 
         public async Task<bool> AddRefreshTokenAsync(

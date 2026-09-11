@@ -89,54 +89,38 @@ namespace POS.Service.userServices
             };
         }
 
-        public async Task<RefreshTokenResponseDto?> Refresh(RefreshTokenRequestDto dto)
+        public async Task<RefreshTokenResponseDto?> Refresh(
+    RefreshTokenRequestDto dto)
         {
-            //find refresh token in database
-            var oldToken = await _jwtDll
-                .GetRefreshTokenAsync(dto.RefreshToken);
+            var oldToken = await _jwtDll.GetRefreshTokenAsync(dto.RefreshToken);
 
             if (oldToken == null)
-                throw new Exception("Invalid refresh token");
-
-            if (oldToken.ExpiresAt <= DateTime.UtcNow)
-                throw new Exception("Refresh token expired");
-
-            if (oldToken.RevokedAt != null)
-                throw new Exception("Refresh token has been revoked");
-
-            if (oldToken.UserId <= 0)
-                throw new Exception("User not found");
-
-            
-
+                throw new Exception("Invalid or expired refresh token");
 
             var user = await _userDll.GetUserByIdAsync(oldToken.UserId);
 
-            if(user == null) throw new Exception("User not found");
+            if (user == null)
+                throw new Exception("User not found");
 
             if (!user.IsActive)
-            {
                 throw new Exception("User is not active");
-            }
-            // Generate new access token
+
+            var now = DateTime.UtcNow;
+
             var accessToken = _jwt.GenerateAccessToken(user);
 
-            // Generate new refresh token
             var newRefreshTokenValue = Convert.ToBase64String(
-                RandomNumberGenerator.GetBytes(64)
-            );
+                RandomNumberGenerator.GetBytes(64));
 
-            // Revoke old token
             oldToken.IsRevoked = true;
-            oldToken.RevokedAt = DateTime.UtcNow;
+            oldToken.RevokedAt = now;
             oldToken.ReplacedByToken = newRefreshTokenValue;
-
 
             await _jwtDll.UpdateRefreshToken(oldToken);
 
-            
-
-            await _jwtDll.AddRefreshTokenAsync(newRefreshTokenValue, oldToken.UserId);
+            await _jwtDll.AddRefreshTokenAsync(
+                newRefreshTokenValue,
+                oldToken.UserId);
 
             await _jwtDll.SaveChangesAsync();
 
@@ -144,8 +128,10 @@ namespace POS.Service.userServices
             {
                 AccessToken = accessToken,
                 RefreshToken = newRefreshTokenValue,
-                AccessTokenExpiresAt= DateTime.UtcNow.AddMinutes(int.Parse(_config["Jwt:AccessTokenMinutes"])),
-                RefreshTokenExpiresAt = DateTime.UtcNow.AddDays(int.Parse(_config["Jwt:RefreshTokenDays"]))
+                AccessTokenExpiresAt = now.AddMinutes(
+                    int.Parse(_config["Jwt:AccessTokenMinutes"]!)),
+                RefreshTokenExpiresAt = now.AddDays(
+                    int.Parse(_config["Jwt:RefreshTokenDays"]!))
             };
         }
 

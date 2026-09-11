@@ -33,7 +33,6 @@ namespace POS.system.Controllers
         [HttpPost("signup")]
         public async Task<IActionResult> SignUp(SignupDTO dto)
         {
-            if (dto == null) return BadRequest("Invalid data");
 
             var res = await _user.SignUp(dto);
 
@@ -47,7 +46,7 @@ namespace POS.system.Controllers
         [HttpPost("login")]
         public async Task<IActionResult> Login(LoginReqDTO dto)
         {
-            if (dto == null) return Unauthorized("Invalid data");
+            
             var res = await _user.Login(dto);
             if (res==null)
             {
@@ -59,8 +58,7 @@ namespace POS.system.Controllers
         [HttpPost("refresh")]
         public async Task<IActionResult> Refresh(RefreshTokenRequestDto dto)
         {
-            if (dto == null)
-                return BadRequest("Invalid data");
+            
 
             var res = await _user.Refresh(dto);
 
@@ -74,8 +72,6 @@ namespace POS.system.Controllers
         public async Task<IActionResult> Logout(RefreshTokenRequestDto dto)
         {
 
-            if (dto == null)
-                return BadRequest("Invalid data");
 
             var res = await _user.Logout(dto);
 
