@@ -25,38 +25,22 @@ builder.Services.AddEndpointsApiExplorer();
 
 
 
-
 builder.Services.AddSwaggerGen(options =>
 {
-    options.SwaggerDoc("v1", new OpenApiInfo { Title = "POS System API", Version = "v1" });
-
-    // 1. Define Bearer Scheme
     options.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
     {
-        Name = "Authorization",
         Type = SecuritySchemeType.Http,
-        Scheme = "Bearer",
+        Scheme = "bearer",
         BearerFormat = "JWT",
+        Name = "Authorization",
         In = ParameterLocation.Header,
-        Description = "Enter your JWT Access Token (do NOT type 'Bearer', just paste the raw token)."
+        Description = "Enter your JWT access token."
     });
 
-    // 2. Require Bearer Token globally across Swagger UI
-    options.AddSecurityRequirement(new OpenApiSecurityRequirement
+    options.AddSecurityRequirement(document => new OpenApiSecurityRequirement
     {
-        {
-            new OpenApiSecurityScheme
-            {
-                Reference = new OpenApiReference
-                {
-                    Type = ReferenceType.SecurityScheme,
-                    Id = "Bearer"
-                }
-            },
-            Array.Empty<string>()
-        }
+        [new OpenApiSecuritySchemeReference("Bearer", document)] = []
     });
-
 });
 
 // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi

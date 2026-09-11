@@ -18,14 +18,13 @@ namespace POS.DataLayer.DataAccess.JwtDAL
 
         }
 
-        public async Task<RefreshTokenDto?> GetRefreshTokenAsync(
-            string token)
+        public async Task<RefreshTokenDto?> GetRefreshTokenAsync(string token)
         {
-            var refreshToken =  await _context.RefreshTokens
-                .Include(x=>x.ExpiresAt)
+            var refreshToken = await _context.RefreshTokens
                 .FirstOrDefaultAsync(x => x.Token == token);
 
-            if (refreshToken == null) return null;
+            if (refreshToken == null)
+                return null;
 
             return new RefreshTokenDto
             {
