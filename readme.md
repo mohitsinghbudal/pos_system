@@ -2,7 +2,7 @@
 
 A Point of Sale (POS) backend system built using **ASP.NET Core Web API, Entity Framework Core, SQL Server, and Dapper**.
 
-The project follows a layered architecture to separate API endpoints, business logic, and database-related operations.
+The project follows a layered architecture to separate API endpoints, business logic, middleware, and database-related operations.
 
 ---
 
@@ -28,6 +28,8 @@ POS.System/
 ├── POS.system/
 │   ├── Controllers/
 │   ├── DTOs/
+│   ├── Middleware/
+│   │   └── GlobalExceptionMiddleware.cs
 │   ├── Program.cs
 │   ├── appsettings.json
 │   └── POS.system.csproj
@@ -68,13 +70,20 @@ POS.System/
 
 # 🏗️ Architecture
 
-The application follows a layered architecture:
+The application follows a layered architecture with an ASP.NET Core middleware pipeline:
 
 ```text
 Client
    │
    ▼
-Controller
+Middleware Pipeline
+   │
+   ├── Global Exception Handling
+   ├── Authentication
+   └── Authorization
+   │
+   ▼
+Controller / API Layer
    │
    ▼
 Service Layer
@@ -92,31 +101,102 @@ Data Layer
 SQL Server
 ```
 
-### API Layer
+---
 
-Responsible for:
+# ⚙️ Middleware
+
+ASP.NET Core middleware is used to handle cross-cutting concerns before requests reach the controllers.
+
+### Current middleware responsibilities
+
+* Global exception handling
+* JWT authentication
+* Authorization pipeline
+* Centralized request processing
+
+### Global Exception Handling
+
+The application uses a centralized exception-handling approach instead of placing repetitive `try/catch` blocks inside every controller or service method.
+
+For example, service-layer exceptions such as:
+
+```csharp
+throw new Exception("Invalid or expired refresh token");
+```
+
+are allowed to propagate through the request pipeline.
+
+The global exception middleware catches the exception and converts it into an appropriate API response.
+
+This keeps controllers and services focused on their actual responsibilities.
+
+### JWT Authentication Middleware
+
+ASP.NET Core's JWT Bearer authentication middleware validates access tokens supplied through the HTTP `Authorization` header.
+
+The general flow is:
+
+```text
+HTTP Request
+     │
+     ▼
+JWT Authentication Middleware
+     │
+     ├── Read Bearer Token
+     ├── Validate Token
+     ├── Validate Signature
+     ├── Validate Expiration
+     └── Create User Claims
+     │
+     ▼
+Authorization
+     │
+     ▼
+Controller
+```
+
+Protected endpoints can then use authorization requirements such as:
+
+```csharp
+[Authorize]
+```
+
+---
+
+# 🔌 API Layer
+
+The API layer is responsible for:
 
 * HTTP requests and responses
 * Controllers
 * DTOs
-* API validation
-* Swagger/OpenAPI
+* API endpoint definitions
+* Swagger/OpenAPI integration
+* Receiving and returning API data
 
-### Service Layer
+Controllers are kept lightweight and delegate business operations to the service layer.
 
-Responsible for:
+---
+
+# 🧠 Service Layer
+
+The service layer is responsible for:
 
 * Business logic
 * Processing requests
 * Authentication logic
+* Password verification
 * Token generation
 * Refresh-token rotation
+* User status validation
 * Calling the data layer
 * Keeping controllers lightweight
 
-### Data Layer
+---
 
-Responsible for:
+# 🗄️ Data Layer
+
+The data layer is responsible for:
 
 * Database entities
 * `DbContext`
@@ -125,6 +205,8 @@ Responsible for:
 * Stored procedures
 * Database access
 * Refresh-token persistence
+
+The project uses both **Entity Framework Core** and **Dapper/stored procedures** depending on the database operation.
 
 ---
 
@@ -225,8 +307,6 @@ Category
 └── UpdatedBy
 ```
 
-Audit fields reference users who created or updated the record.
-
 ---
 
 ### SubCategory
@@ -254,9 +334,9 @@ Category 1 ─────────── * SubCategory
 
 ### Inventory Item
 
-Stores products/items available in the POS system.
+Stores products/items intended to be available in the POS system.
 
-The inventory design also supports units such as:
+The inventory design supports units such as:
 
 ```text
 Box
@@ -295,7 +375,7 @@ Bill
 
 ### Payment Type
 
-The system supports different payment methods, including:
+The system is designed to support different payment methods, including:
 
 * Cash
 * Khalti
@@ -339,9 +419,23 @@ Store Refresh Token
 Return Access Token + Refresh Token
 ```
 
+The authentication service currently supports:
+
+* User signup
+* BCrypt password hashing
+* User login
+* JWT access-token generation
+* Refresh-token generation
+* Refresh-token validation
+* Refresh-token rotation
+* Refresh-token revocation
+* Logout
+* Multiple active sessions
+* Active/inactive user validation
+
 ---
 
-## 🔑 Password Hashing
+# 🔑 Password Hashing
 
 Passwords are never stored as plain text.
 
@@ -380,7 +474,7 @@ The access token contains claims representing information about the authenticate
 * Role
 * Phone number
 
-The JWT configuration is stored in application configuration.
+JWT configuration is stored in application configuration.
 
 Example:
 
@@ -393,7 +487,7 @@ Example:
 }
 ```
 
-The JWT secret key is kept in configuration and should not be committed to the repository.
+The JWT secret key is kept in configuration and should never be committed to the repository.
 
 ---
 
@@ -423,7 +517,7 @@ Token is not revoked
 Token has not expired
 ```
 
-The current query performs these checks:
+The current data-layer query performs these checks:
 
 ```csharp
 .Where(x =>
@@ -471,7 +565,9 @@ Store New Refresh Token
 Return New Access Token + Refresh Token
 ```
 
-This prevents a rotated refresh token from being reused.
+The old refresh token becomes invalid after rotation.
+
+The `ReplacedByToken` field keeps track of the token that replaced the old token.
 
 ---
 
@@ -562,7 +658,7 @@ SignupDTO
 
 The API receives the user's password through the DTO, while the database stores a BCrypt password hash through the `User` entity.
 
-This prevents database entities from becoming the direct API contract.
+This keeps database entities separate from the API contract.
 
 ---
 
@@ -583,13 +679,13 @@ POS.DataLayer/
 
 #### `pos_signup`
 
-Creates a new user in the `Users` table.
+Creates a new user in the database.
 
 #### `pos_login`
 
 Handles user login-related database operations.
 
-Stored procedures are deployed through **Entity Framework Core migrations**.
+Stored procedures are version-controlled and integrated with the database deployment process through Entity Framework Core migrations.
 
 Example migration approach:
 
@@ -601,7 +697,7 @@ var sqlScript = File.ReadAllText(
 migrationBuilder.Sql(sqlScript);
 ```
 
-This allows stored procedures to be version-controlled together with the application.
+This allows stored procedures to be maintained alongside the application's database version history.
 
 ---
 
@@ -609,22 +705,16 @@ This allows stored procedures to be version-controlled together with the applica
 
 Entity Framework Core migrations are used to manage database schema changes.
 
-Typical command:
+Create a migration:
 
 ```bash
-dotnet ef migrations add MigrationName \
-    --project POS.DataLayer \
-    --startup-project POS.system \
-    --context POSDbContext
+dotnet ef migrations add MigrationName --project POS.DataLayer --startup-project POS.system --context POSDbContext
 ```
 
 Update the database:
 
 ```bash
-dotnet ef database update \
-    --project POS.DataLayer \
-    --startup-project POS.system \
-    --context POSDbContext
+dotnet ef database update --project POS.DataLayer --startup-project POS.system --context POSDbContext
 ```
 
 Migrations are committed to Git because they are part of the database version history.
@@ -661,7 +751,7 @@ User 1 ─────────── * RefreshToken
 
 Swagger/OpenAPI is configured for API testing and documentation.
 
-When the application is running in development mode, Swagger can be used to:
+Swagger can be used to:
 
 * View available endpoints
 * Send HTTP requests
@@ -774,10 +864,7 @@ Configure JWT settings as well:
 ## 4. Apply migrations
 
 ```bash
-dotnet ef database update \
-    --project POS.DataLayer \
-    --startup-project POS.system \
-    --context POSDbContext
+dotnet ef database update --project POS.DataLayer --startup-project POS.system --context POSDbContext
 ```
 
 ## 5. Run the API
@@ -857,6 +944,9 @@ The current authentication workflow is:
 
 * [x] ASP.NET Core Web API setup
 * [x] Layered project structure
+* [x] Middleware pipeline configuration
+* [x] Global exception-handling middleware
+* [x] JWT authentication middleware configuration
 * [x] SQL Server integration
 * [x] Entity Framework Core setup
 * [x] `POSDbContext`
@@ -890,7 +980,6 @@ The current authentication workflow is:
 * [x] Refresh-token replacement tracking
 * [x] Logout using refresh-token revocation
 * [x] Multiple active login sessions
-* [x] Global exception-handling approach
 * [x] Swagger/OpenAPI authentication testing
 
 ### In Progress / Planned
@@ -921,7 +1010,7 @@ Planned improvements include:
 * Transaction management
 * Improved validation and error handling
 * Structured exception types
-* Logging
+* Structured logging
 * Unit testing
 * Integration testing
 * API versioning
